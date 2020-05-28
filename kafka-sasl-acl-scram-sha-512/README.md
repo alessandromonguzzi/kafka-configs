@@ -1,12 +1,16 @@
 Kafka configuration with SASL and SCRAM-SHA-512
 
+The following procedure creates a single broker, single zookeeper setup with two clients: alice as producer and bob as consumer.
+
+Start zookeeper in the normal way.
+
 Kafka broker configuration:
 
 - sasl-server.properties
 - jaas-kafka-server.conf
 - sasl-kafka-server-start.sh
 
-Configure 
+Configure users in zookeeper
 ./bin/kafka-configs.sh --zookeeper localhost:2181 --alter --add-config 'SCRAM-SHA-512=[iterations=8192,password=alice],SCRAM-SHA-512=[password=alice]' --entity-type users --entity-name alice
 ./bin/kafka-configs.sh --zookeeper localhost:2181 --alter --add-config 'SCRAM-SHA-512=[password=admin],SCRAM-SHA-512=[password=admin]' --entity-type users --entity-name admin
 
