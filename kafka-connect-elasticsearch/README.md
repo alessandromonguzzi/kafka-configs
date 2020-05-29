@@ -1,11 +1,11 @@
-## How to use kafka connect to push messages into elasticsearch using HTTPS
+# How to use kafka connect to push messages into elasticsearch using HTTPS
 
 Requirements:
 1) kafka_2.12-2.5.0 https://kafka.apache.org/downloads
 2) elasticsearch-7.7.0 https://www.elastic.co/downloads/elasticsearch
 3) camel-elasticsearch-rest-kafka-connector: https://github.com/apache/camel-kafka-connector
 
-# Camel-kafka-connector setup
+### Camel-kafka-connector setup
 Clone above repository
 ```
 mvn clean package 
@@ -14,7 +14,7 @@ the camel-elasticsearch-rest-kafka-connector directory is located in:
 ```
 core/target/camel-kafka-connector-*-package/share/java/
 ```
-# Elasticsearch setup
+### Elasticsearch setup
 ```
 cd elasticsearch-7.7.0
 ```
@@ -49,7 +49,7 @@ bin/elasticsearch-setup-passwords auto -u "https://localhost:9200"
 ```
 Copy the above passwords and use them to update the `elasticSinkTaskLocalSSL.json` file.
 
-# Kafka setup
+### Kafka setup
 The below configuration is based on a single broker, single zookeeper, single kafka-connect instance, adapt provided configuration for different scenarios.
 ```
 cd kafka_2.12-2.5.0
@@ -66,7 +66,7 @@ Create a new topic `my-topic` in kafka
 ```
 ./bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic my-topic --partitions 1 --replication-factor 1
 ```
-# Kafka-connect setup
+### Kafka-connect setup
 Generate a truststore to connect with elasticsearch. Watchout, you need only the .crt file to do this step, but move from PKCS12 to JKS
 ``` 
 keytool -import -alias localhost -file elasticsearch-7.7.0/config/certificates/localhost/localhost.crt -storetype JKS -keystore server.truststore
@@ -74,7 +74,8 @@ keytool -import -alias localhost -file elasticsearch-7.7.0/config/certificates/l
 remember the password that you define in the `server.truststore` and use it in the `javax.net.ssl.trustStorePassword` property below. In the example the `es1234` password is used.
 
 create a plugin directory inside kakfa installation
-```mkdir plugins
+```
+mkdir plugins
 cp -r camel-elasticsearch-rest-kafka-connector plugins
 ```
 Launch kafka-connect that is listening on port 8083
@@ -82,15 +83,21 @@ Launch kafka-connect that is listening on port 8083
 EXTRA_ARGS="-Djavax.net.ssl.trustStore=server.truststore -Djavax.net.ssl.trustStorePassword=es1234" bin/connect-distributed.sh connect-0.properties
 ```
 Register camel-es-connector to kafka-connect
-```curl -sX POST -H "Content-Type: application/json" localhost:8083/connectors -d@elasticSinkTaskLocalSSL.json```
+```
+curl -sX POST -H "Content-Type: application/json" localhost:8083/connectors -d@elasticSinkTaskLocalSSL.json
+```
 
 Generate a message using `bin/kafka-console-producer.sh` (NOTE: message must be in JSON format, normal String does not work)
-```./bin/kafka-console-producer.sh --topic my-topic --broker-list localhost:9092```
+```
+./bin/kafka-console-producer.sh --topic my-topic --broker-list localhost:9092
+```
 
 Message example:
-```{"data":"My message"}```
+```
+{"data":"My message"}
+```
 
-command to verify content of elasticsearch on topic my-topic (it can take some time (<1min for kafka-connect to work)
+command to verify content of elasticsearch on topic `my-topic`; it can take some time (<1min for kafka-connect to work)
 ```
 curl -k https://localhost:9200/my-topic/_search
 ```
