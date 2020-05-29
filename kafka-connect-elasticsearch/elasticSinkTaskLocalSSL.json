@@ -1,0 +1,17 @@
+{
+  "name": "camel-es-connector",
+  "config": {
+    "connector.class": "org.apache.camel.kafkaconnector.elasticsearchrest.CamelElasticsearchrestSinkConnector",
+    "tasks.max": "1",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "topics": "my-topic",
+    "camel.sink.endpoint.enableSSL":"true",
+    "camel.sink.endpoint.lazyStartProducer":"true",
+    "camel.component.elasticsearch-rest.lazyStartProducer": "true",
+    "camel.component.elasticsearch-rest.user":"elastic",
+    "camel.component.elasticsearch-rest.password":"AqFmDP4SNAKaWNSbZSpt",
+    "camel.component.elasticsearch-rest.enableSSL":"true",
+    "camel.sink.url": "elasticsearch-rest://elasticsearch-sample?hostAddresses=localhost:9200&operation=Index&indexName=my-topic"
+  }
+}

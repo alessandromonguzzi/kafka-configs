@@ -1,0 +1,11 @@
+{
+  "name": "camel-es-connector",
+  "config": {
+    "connector.class": "org.apache.camel.kafkaconnector.elasticsearchrest.CamelElasticsearchrestSinkConnector",
+    "tasks.max": "1",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "topics": "my-topic",
+    "camel.sink.url": "elasticsearch-rest://elasticsearch?hostAddresses=localhost:9200&operation=Index&indexName=my-topic"
+  }
+}
