@@ -1,0 +1,42 @@
+﻿apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaConnectS2I
+metadata:
+  annotations:
+    strimzi.io/use-connector-resources: 'true'
+  name: my-connect-cluster
+  namespace: default
+spec:
+  bootstrapServers: 'my-cluster-kafka-bootstrap:9093'
+  config:
+    config.storage.replication.factor: 1
+    config.storage.topic: my-connect-cluster-configs
+    offset.storage.replication.factor: 1
+    offset.storage.topic: my-connect-cluster-offsets
+    status.storage.replication.factor: 1
+    status.storage.topic: my-connect-cluster-status
+  externalConfiguration:
+    volumes:
+      - name: elasticsearch-sample-es-elastic-user
+        secret:
+          secretName: elasticsearch-sample-es-elastic-user
+      - name: es-trustore-secret
+        secret:
+          secretName: es-trustore-secret
+  jvmOptions:
+    javaSystemProperties:
+      - name: javax.net.ssl.trustStore
+        value: /opt/kafka/external-configuration/es-trustore-secret/keystore.jks
+      - name: javax.net.ssl.trustStorePassword
+        value: es1234
+  replicas: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 500Mi
+  tls:
+    trustedCertificates:
+      - certificate: ca.crt
+        secretName: my-cluster-cluster-ca-cert

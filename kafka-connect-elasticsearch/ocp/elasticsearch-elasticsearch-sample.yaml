@@ -1,0 +1,39 @@
+﻿apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  annotations:
+    common.k8s.elastic.co/controller-version: 1.1.1
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"elasticsearch.k8s.elastic.co/v1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"elasticsearch-sample","namespace":"default"},"spec":{"nodeSets":[{"config":{"node.data":true,"node.ingest":true,"node.master":true,"node.store.allow_mmap":false},"count":1,"name":"default"}],"version":"7.7.0"}}
+  name: elasticsearch-sample
+  namespace: default
+spec:
+  auth: {}
+  http:
+    service:
+      metadata:
+        creationTimestamp: null
+      spec: {}
+    tls:
+      certificate: {}
+  nodeSets:
+    - config:
+        node.data: true
+        node.ingest: true
+        node.master: true
+        node.store.allow_mmap: false
+      count: 1
+      name: default
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers: null
+  transport:
+    service:
+      metadata:
+        creationTimestamp: null
+      spec: {}
+  updateStrategy:
+    changeBudget: {}
+  version: 7.7.0

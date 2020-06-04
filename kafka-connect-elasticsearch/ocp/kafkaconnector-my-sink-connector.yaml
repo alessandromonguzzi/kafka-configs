@@ -1,0 +1,23 @@
+﻿apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaConnector
+metadata:
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+  name: my-sink-connector
+  namespace: default
+spec:
+  class: >-
+    org.apache.camel.kafkaconnector.elasticsearchrest.CamelElasticsearchrestSinkConnector
+  config:
+    value.converter: org.apache.kafka.connect.storage.StringConverter
+    topics: my-topic
+    camel.component.elasticsearch-rest.enableSSL: true
+    camel.sink.endpoint.lazyStartProducer: true
+    camel.sink.url: >-
+      elasticsearch-rest://elasticsearch-sample?hostAddresses=elasticsearch-sample-es-http:9200&operation=Index&indexName=my-topic"
+    camel.component.elasticsearch-rest.user: elastic
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    camel.sink.endpoint.enableSSL: true
+    camel.component.elasticsearch-rest.password: xOF608zW6i5ONB5O4sQ63O2k
+    camel.component.elasticsearch-rest.lazyStartProducer: true
+  tasksMax: 1
