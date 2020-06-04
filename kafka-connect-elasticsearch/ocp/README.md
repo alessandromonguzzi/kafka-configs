@@ -1,7 +1,6 @@
 # Connecting Kafka with Elasticsearch using KafkaConnectS2I over SSL
 
-
-(In this demo we'll use default namespace containing both Kafka cluster, KafkaConnect and Elasticsearch)
+(We'll use default namespace containing both Kafka cluster, KafkaConnect and Elasticsearch)
 ## Kafka cluster setup using AMQ Streams
 
 1. Install AMQ Streams operator in default namespace
@@ -24,12 +23,12 @@ oc apply -f elasticsearch-elasticsearch-sample.yaml
 ```
 6. Create a truststore using the elasticsearch tls.crt included inside the `elasticsearch-sample-es-http-certs-public` secret
 ```
-oc get secret "$NAME-es-http-certs-public" -o go-template='{{index .data "tls.crt" | base64decode }}' > tls.crt
-keytool -import -file tls.crt -alias firstCA -keystore myTrustStore
-oc create secret generic am_truststore.jks --from-file=truststore.jks=myTrustStore --type=opaque
-cat myTrustStore | base64
-vi truststore.yaml
-oc apply -f truststore.yaml
+#extract certificate to tls.crt file
+oc get secret "elasticsearch-sample-es-http-certs-public" -o go-template='{{index .data "tls.crt" | base64decode }}' > tls.crt
+#generate a truststore file containing the tls.crt, note the es1234 password
+keytool -import -file tls.crt -alias firstCA -keystore myTrustStore -storepass es1234 -noprompt
+#create the es-truststore-secret
+oc create secret generic es-truststore-secret --from-file=truststore.jks=myTrustStore --type=opaque
 ```
 7. Start KafkaConnectS2I cluster using the `kafkaconnects2i-my-connect-cluster.yaml` file
 ```
@@ -38,11 +37,14 @@ oc apply -f kafkaconnects2i-my-connect-cluster.yaml
 8. Load the `camel-elasticsearch-rest-kafka-connector` package into the my-connect-cluster-connect
 ```
 mkdir connectors
-wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-elasticsearch-rest-kafka-connector/0.2.0/camel-elasticsearch-rest-kafka-connector-0.2.0-package.zip
-unzip -d connectors camel-elasticsearch-rest-kafka-connector-0.2.0-package.zip
+curl https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-elasticsearch-rest-kafka-connector/0.2.0/camel-elasticsearch-rest-kafka-connector-0.2.0-package.zip > connectors/file.zip
+unzip -d connectors file.zip
+rm connectors/file.zip
+## Important note, it seems that log4j2 dependencies required by elasticsearch are missing. So download them manually
+curl https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.13.3/log4j-core-2.13.3.jar > connectors/camel-elasticsearch-rest-kafka-connector/log4j-core-2.13.3.jar
+curl https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.13.3/log4j-api-2.13.3.jar > connectors/camel-elasticsearch-rest-kafka-connector/log4j-api-2.13.3.jar
 oc start-build my-connect-cluster-connect --from-dir=./connectors --follow
 ```
-
 9. Create KafkaConnector inside the `my-connect-cluster-connect` using the `kafkaconnector-my-sink-connector.yaml` file
 ```
 oc apply -f kafkaconnector-my-sink-connector.yaml
@@ -50,7 +52,7 @@ oc apply -f kafkaconnector-my-sink-connector.yaml
 10. Test the connection between Kafka and Elasticsearch sending a test message
 ```
 oc exec -it my-cluster-kafka-0 bash
-echo "Hello World" | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic my-topic
+echo '{"data":"Hello World"}' | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic my-topic
 ```
 Check that message is stored in Elasticsearch (it may take some time)
 ```
