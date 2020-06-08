@@ -14,6 +14,16 @@ the camel-elasticsearch-rest-kafka-connector directory is located in:
 ```
 core/target/camel-kafka-connector-*-package/share/java/
 ```
+As alternative, the same is available here:
+
+https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-elasticsearch-rest-kafka-connector/0.2.0/camel-elasticsearch-rest-kafka-connector-0.2.0-package.zip
+
+Important note, it seems that log4j2 dependencies required by elasticsearch are missing. So download them manually
+
+https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.13.3/log4j-core-2.13.3.jar
+
+https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.13.3/log4j-api-2.13.3.jar
+
 ### Elasticsearch setup
 ```
 cd elasticsearch-7.7.0
@@ -89,17 +99,12 @@ curl -sX POST -H "Content-Type: application/json" localhost:8083/connectors -d@e
 
 Generate a message using `bin/kafka-console-producer.sh` (NOTE: message must be in JSON format, normal String does not work)
 ```
-./bin/kafka-console-producer.sh --topic my-topic --broker-list localhost:9092
+echo '{"data":"Hello World"}' | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic my-topic
 ```
 
-Message example:
+command to verify content of elasticsearch on topic `my-topic`; it can take some time (<1min for kafka-connect to work).
 ```
-{"data":"My message"}
-```
-
-command to verify content of elasticsearch on topic `my-topic`; it can take some time (<1min for kafka-connect to work)
-```
-curl -k https://localhost:9200/my-topic/_search
+curl -k -u elastic:<password here> https://localhost:9200/my-topic/_search
 ```
 
 Some useful links:
