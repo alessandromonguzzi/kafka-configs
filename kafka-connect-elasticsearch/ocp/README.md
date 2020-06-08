@@ -30,11 +30,19 @@ keytool -import -file tls.crt -alias firstCA -keystore myTrustStore -storepass e
 #create the es-truststore-secret
 oc create secret generic es-truststore-secret --from-file=truststore.jks=myTrustStore --type=opaque
 ```
-7. Start KafkaConnectS2I cluster using the `kafkaconnects2i-my-connect-cluster.yaml` file
+7. Create a secret containing a .properties file with elastic username and password inside. This secret will be mounted by the kafka-connect cluster and used by the kafka-sink-connector.
+```
+PW=$(oc get secret "elasticsearch-sample-es-elastic-user" -o go-template='{{.data.elastic | base64decode}}')
+sed -i "" "s/REPLACEME/$PW/g" es-user.properties
+oc create secret generic es-user-secret --from-file=es-user.properties
+```
+Please note that this secret is needed because the existing `elasticsearch-sample-es-elastic-user` containing the password is not a valid .properties file, so it cannot be read by the `org.apache.kafka.common.config.provider.FileConfigProvider` used in the kafka-connect configuration.
+
+8. Start KafkaConnectS2I cluster using the `kafkaconnects2i-my-connect-cluster.yaml` file
 ```
 oc apply -f kafkaconnects2i-my-connect-cluster.yaml
 ```
-8. Load the `camel-elasticsearch-rest-kafka-connector` package into the my-connect-cluster-connect
+9. Load the `camel-elasticsearch-rest-kafka-connector` package into the my-connect-cluster-connect
 ```
 mkdir connectors
 curl https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-elasticsearch-rest-kafka-connector/0.2.0/camel-elasticsearch-rest-kafka-connector-0.2.0-package.zip > connectors/file.zip
@@ -45,16 +53,16 @@ curl https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.13.3/l
 curl https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.13.3/log4j-api-2.13.3.jar > connectors/camel-elasticsearch-rest-kafka-connector/log4j-api-2.13.3.jar
 oc start-build my-connect-cluster-connect --from-dir=./connectors --follow
 ```
-9. Create KafkaConnector inside the `my-connect-cluster-connect` using the `kafkaconnector-my-sink-connector.yaml` file
+10. Create KafkaConnector inside the `my-connect-cluster-connect` using the `kafkaconnector-my-sink-connector.yaml` file
 ```
 oc apply -f kafkaconnector-my-sink-connector.yaml
 ```
-10. Test the connection between Kafka and Elasticsearch sending a test message
+11. Test the connection between Kafka and Elasticsearch sending a test message
 ```
 oc exec -it my-cluster-kafka-0 bash
 echo '{"data":"Hello World"}' | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic my-topic
 ```
-Check that message is stored in Elasticsearch (it may take some time)
+Check that message is stored in Elasticsearch (it may take some time). Please use the $PW value in the command.
 ```
-curl -k https://localhost:9200/my-topic/_search
+curl -k -u elastic:<password here> https://elasticsearch-sample-es-http:9200/my-topic/_search
 ```
