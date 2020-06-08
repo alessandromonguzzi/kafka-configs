@@ -14,10 +14,10 @@ spec:
     camel.component.elasticsearch-rest.enableSSL: true
     camel.sink.endpoint.lazyStartProducer: true
     camel.sink.url: >-
-      elasticsearch-rest://elasticsearch-sample?hostAddresses=elasticsearch-sample-es-http:9200&operation=Index&indexName=my-topic"
+      elasticsearch-rest://elasticsearch-sample?hostAddresses=elasticsearch-sample-es-http:9200&operation=Index&indexName=my-topic
     camel.component.elasticsearch-rest.user: elastic
     key.converter: org.apache.kafka.connect.storage.StringConverter
     camel.sink.endpoint.enableSSL: true
-    camel.component.elasticsearch-rest.password: xOF608zW6i5ONB5O4sQ63O2k
+    camel.component.elasticsearch-rest.password: "${file:/opt/kafka/external-configuration/es-user-secret/es-user.properties:elastic}"
     camel.component.elasticsearch-rest.lazyStartProducer: true
   tasksMax: 1

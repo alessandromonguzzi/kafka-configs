@@ -8,6 +8,8 @@ metadata:
 spec:
   bootstrapServers: 'my-cluster-kafka-bootstrap:9093'
   config:
+    config.providers: file
+    config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider
     config.storage.replication.factor: 1
     config.storage.topic: my-connect-cluster-configs
     offset.storage.replication.factor: 1
@@ -16,16 +18,16 @@ spec:
     status.storage.topic: my-connect-cluster-status
   externalConfiguration:
     volumes:
-      - name: elasticsearch-sample-es-elastic-user
+      - name: es-user-secret
         secret:
-          secretName: elasticsearch-sample-es-elastic-user
-      - name: es-trustore-secret
+          secretName: es-user-secret
+      - name: es-truststore-secret
         secret:
-          secretName: es-trustore-secret
+          secretName: es-truststore-secret
   jvmOptions:
     javaSystemProperties:
       - name: javax.net.ssl.trustStore
-        value: /opt/kafka/external-configuration/es-trustore-secret/keystore.jks
+        value: /opt/kafka/external-configuration/es-truststore-secret/truststore.jks
       - name: javax.net.ssl.trustStorePassword
         value: es1234
   replicas: 1
